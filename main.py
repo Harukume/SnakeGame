@@ -3,9 +3,11 @@ import random # for random respawn of fruit
 import time
 
 
+
 class Window:
     def __init__(self, width, height):  #pygame setup
         pygame.init()
+
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
@@ -54,8 +56,9 @@ class Snake:
 
         self.body.insert(0, new_head) #add on 0 index new direction
         self.body.pop() #cut last piece of tail to maintain length
+        self.position = [new_head[0], new_head[1]]
 
-#todo: make fruit, collisions
+#todo: collisions
 class Fruit:
     def __init__(self):
         self.color = "white"
@@ -64,19 +67,66 @@ class Fruit:
         self.exist = False
 
     def createFruit(self, width, height):
-        self.width = random.randint(10, (width // 10) - 1) * 10
-        self.height = random.randint(10, (height // 10) - 1) * 10
-
+        self.width = random.randint(1, (width // 10) - 1) * 10
+        self.height = random.randint(1, (height // 10) - 1) * 10
+        self.exist = True
 
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.width, self.height), 10)
 
 #todo: Score score change, save score
+
+#todo: game over screen
+
+class Score:
+    def __init__(self):
+        pygame.font.init()
+        self.score_rect = None
+        self.score_surface = None
+        self.score_font = None
+        self.score = 0
+        self.color = "white"
+        self.font = pygame.font.Font('SixtyfourConvergence.ttf', 24)
+        self.size = 24
+        self.position = [0, 0]
+        self.score_text = ""
+
+    def draw(self, screen):
+        self.score_text = f"Score: {self.score}"
+
+        self.score_surface = self.font.render(str(self.score_text), True, pygame.Color(self.color))
+        self.score_rect = self.score_surface.get_rect(topleft=self.position)
+
+        screen.blit(self.score_surface, self.position)
+
+    def add_point(self):
+        self.score += 1
+
+    def ending_screen(self, width, height, screen):
+        self.score_text = f"Game Over Score: {self.score}"
+        self.score_surface = self.font.render(self.score_text, True, pygame.Color("white"))
+        self.score_rect = self.score_surface.get_rect(midtop=[width/2, height/2])
+        screen.blit(self.score_surface, self.score_rect)
+def game_over(): #todo: save best score
+    global running
+    print("Game Over")
+
+    window.screen.fill("black")
+    score.ending_screen(window.width, window.height, window.screen)
+    pygame.display.flip()
+
+    time.sleep(2)
+    pygame.quit()
+    running = False
+
+    quit()
+
 #setting up game
 window = Window(720, 480)
 snake = Snake()
 fruit = Fruit()
+score = Score()
 running = True
 
 
@@ -107,11 +157,20 @@ while running: #game loop
 
     if not fruit.exist:
         fruit.createFruit(window.width, window.height)
-        fruit.exist = True
 
-    fruit.draw(window.screen)
+    fruit.draw(window.screen) #drawing fruit on every layer
+    score.draw(window.screen) #drawing score
 
-    pygame.display.update()
+    #collisions with border #todo: add collision with tail
+    if snake.position[0] > window.width or snake.position[0] < 0 or snake.position[1] > window.height or snake.position[1] < 0:
+        game_over()
+
+    if snake.position[0] <= fruit.width &  snake.position[1] <= fruit.height:
+        score.add_point()
+        fruit.createFruit(window.width, window.height)
+
+    if running:
+        pygame.display.flip() #refresh of layer
 
     window.clock.tick(60) #limit FPS to 60
 
