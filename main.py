@@ -57,7 +57,20 @@ class Snake:
 
 #todo: make fruit, collisions
 class Fruit:
-    pass
+    def __init__(self):
+        self.color = "white"
+        self.width = None
+        self.height = None
+        self.exist = False
+
+    def createFruit(self, width, height):
+        self.width = random.randint(10, (width // 10) - 1) * 10
+        self.height = random.randint(10, (height // 10) - 1) * 10
+
+
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.width, self.height), 10)
 
 #todo: Score score change, save score
 #setting up game
@@ -65,6 +78,8 @@ window = Window(720, 480)
 snake = Snake()
 fruit = Fruit()
 running = True
+
+
 
 while running: #game loop
 
@@ -90,7 +105,11 @@ while running: #game loop
     for pos in snake.body:
         pygame.draw.rect(window.screen, "green", pygame.Rect(pos[0], pos[1], 20, 20) ) # (x,y, width, height)
 
-    pygame.display.flip() #display work on screen
+    if not fruit.exist:
+        fruit.createFruit(window.width, window.height)
+        fruit.exist = True
+
+    fruit.draw(window.screen)
 
     pygame.display.update()
 
