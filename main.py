@@ -1,3 +1,5 @@
+from webbrowser import open_new
+
 import pygame
 import random # for random respawn of fruit
 import time
@@ -87,9 +89,6 @@ class Fruit:
                            (self.position[0] + CELL_SIZE // 2, self.position[1] + CELL_SIZE // 2),
                            CELL_SIZE // 2)
 
-#todo: save score
-
-#todo: game over screen
 
 class Score:
     def __init__(self):
@@ -116,10 +115,39 @@ class Score:
         self.score += 1
 
     def ending_screen(self, width, height, screen):
-        self.score_text = f"Game Over Score: {self.score}"
+        # game over render
+        game_over_surface = self.font.render("Game Over", True, pygame.Color("white"))
+        game_over_rect = game_over_surface.get_rect(midtop=[width / 2 , height / 2 - 40])
+
+        screen.blit(game_over_surface, game_over_rect)
+
+        # score render
+        self.score_text = f"Score: {self.score}"
         self.score_surface = self.font.render(self.score_text, True, pygame.Color("white"))
         self.score_rect = self.score_surface.get_rect(midtop=[width/2, height/2])
+
         screen.blit(self.score_surface, self.score_rect)
+
+        #best score render
+        best_score_surface = self.font.render(f"Best Score: {self.best_score()}", True, pygame.Color("green"))
+        best_score_rect = best_score_surface.get_rect(midtop=[width / 2 , height / 2 + 40])
+
+        screen.blit(best_score_surface, best_score_rect)
+
+
+    def best_score(self):
+        with open("BestScore.txt", "r") as file:
+            line = file.readline()
+            if len(line) <= 0:
+                line = "0"
+            bestScore = int(line)
+
+        if bestScore < self.score:
+            bestScore = self.score
+            with open("BestScore.txt", "w") as file:
+                file.write(str(bestScore))
+        return bestScore
+
 def game_over(): #todo: save best score
     global running
     print("Game Over")
