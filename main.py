@@ -15,7 +15,6 @@ class Window:
 
         pygame.display.set_caption("Snake Game")
 
-#todo: length increase
 class Snake:
     global CELL_SIZE
     def __init__(self):
@@ -88,7 +87,7 @@ class Fruit:
                            (self.position[0] + CELL_SIZE // 2, self.position[1] + CELL_SIZE // 2),
                            CELL_SIZE // 2)
 
-#todo: Score score change, save score
+#todo: save score
 
 #todo: game over screen
 
@@ -174,9 +173,14 @@ while running: #game loop
     fruit.draw(window.screen) #drawing fruit on every layer
     score.draw(window.screen) #drawing score
 
-    #snake collisions with border #todo: add collision with tail
+    #snake collisions with border
     if snake.position[0] > window.width or snake.position[0] < 0 or snake.position[1] > window.height or snake.position[1] < 0:
         game_over()
+
+    #touching the snake body
+    for block in snake.body[1:]:
+        if snake.body[0][0] == block[0] and snake.body[0][1] == block[1]:
+            game_over()
 
     #snake collisions with fruit
     if abs(snake.body[0][0] - fruit.position[0]) < CELL_SIZE and abs(snake.body[0][1] - fruit.position[1]) < CELL_SIZE:
