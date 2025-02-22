@@ -2,7 +2,7 @@ import pygame
 import random # for random respawn of fruit
 import time
 
-
+CELL_SIZE = 20
 
 class Window:
     def __init__(self, width, height):  #pygame setup
@@ -17,14 +17,15 @@ class Window:
 
 #todo: length increase
 class Snake:
+    global CELL_SIZE
     def __init__(self):
         #first four blocks of snake
-        self.body = [[100,50], [90,50], [80,50], [70,50]] #list of segments [x,y]
+        self.body = [[100,50], [80,50], [60,50], [40,50]] #list of segments [x,y], they need to be CELL SIZE away from each other
 
         #default position
         self.position = [100,50]
 
-        self.speed = 2 #snake speed
+        self.speed = CELL_SIZE #snake speed
 
         #default direction of snake, he goes to right
         self.direction = "RIGHT"
@@ -53,27 +54,35 @@ class Snake:
         if self.direction == "DOWN":
             new_head = [self.body[0][0], self.body[0][1]  + self.speed]
 
-
+        # print(f"Snake move: {snake.body[0]} -> {new_head}, expected step: {CELL_SIZE}")
         self.body.insert(0, new_head) #add on 0 index new direction
         self.body.pop() #cut last piece of tail to maintain length
         self.position = [new_head[0], new_head[1]]
 
+
 #todo: collisions
 class Fruit:
+    global CELL_SIZE
     def __init__(self):
-        self.color = "white"
-        self.width = None
-        self.height = None
+        self.color = "pink"
+        self.position = []
         self.exist = False
 
     def createFruit(self, width, height):
-        self.width = random.randint(1, (width // 10) - 1) * 10
-        self.height = random.randint(1, (height // 10) - 1) * 10
+        #asigns new position on screen to fruit
+        self.position = [
+            random.randint(0, (width // CELL_SIZE) - 1) * CELL_SIZE, # Cell size is used to divide screen as cell pixels and then increased to full cell x cell
+            random.randint(0, (height // CELL_SIZE) - 1) * CELL_SIZE
+        ]
+        print(self.position)
         self.exist = True
 
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.width, self.height), 10)
+        # draws fruit on each frame as pink circle
+        pygame.draw.circle(screen, self.color,
+                           (self.position[0] + CELL_SIZE // 2, self.position[1] + CELL_SIZE // 2),
+                           CELL_SIZE // 2)
 
 #todo: Score score change, save score
 
@@ -153,7 +162,7 @@ while running: #game loop
     snake.move()
     #setup here
     for pos in snake.body:
-        pygame.draw.rect(window.screen, "green", pygame.Rect(pos[0], pos[1], 20, 20) ) # (x,y, width, height)
+        pygame.draw.rect(window.screen, "green", pygame.Rect(pos[0], pos[1], CELL_SIZE, CELL_SIZE) ) # (x,y, width, height)
 
     if not fruit.exist:
         fruit.createFruit(window.width, window.height)
@@ -161,18 +170,19 @@ while running: #game loop
     fruit.draw(window.screen) #drawing fruit on every layer
     score.draw(window.screen) #drawing score
 
-    #collisions with border #todo: add collision with tail
+    #snake collisions with border #todo: add collision with tail
     if snake.position[0] > window.width or snake.position[0] < 0 or snake.position[1] > window.height or snake.position[1] < 0:
         game_over()
 
-    if snake.position[0] <= fruit.width &  snake.position[1] <= fruit.height:
+    #snake collisions with fruit
+    if abs(snake.body[0][0] - fruit.position[0]) < CELL_SIZE and abs(snake.body[0][1] - fruit.position[1]) < CELL_SIZE:
         score.add_point()
         fruit.createFruit(window.width, window.height)
 
     if running:
         pygame.display.flip() #refresh of layer
 
-    window.clock.tick(60) #limit FPS to 60
+    window.clock.tick(6) #limit FPS
 
 #exit game
 pygame.quit()
