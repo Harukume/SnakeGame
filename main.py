@@ -34,7 +34,7 @@ class Snake:
 
     def move(self):
         #check if direction can be changed for i.e. you cant go down if you are going up
-
+        new_head = []
         if self.change_to == "RIGHT" and self.direction != "LEFT":
             self.direction =  "RIGHT"
         if self.change_to == "LEFT" and self.direction != "RIGHT":
@@ -59,8 +59,12 @@ class Snake:
         self.body.pop() #cut last piece of tail to maintain length
         self.position = [new_head[0], new_head[1]]
 
+    def increaseTail(self): #
+        self.body.insert(0, self.position)
+        self.position = self.body[0]
 
-#todo: collisions
+
+
 class Fruit:
     global CELL_SIZE
     def __init__(self):
@@ -178,6 +182,7 @@ while running: #game loop
     if abs(snake.body[0][0] - fruit.position[0]) < CELL_SIZE and abs(snake.body[0][1] - fruit.position[1]) < CELL_SIZE:
         score.add_point()
         fruit.createFruit(window.width, window.height)
+        snake.increaseTail()
 
     if running:
         pygame.display.flip() #refresh of layer
